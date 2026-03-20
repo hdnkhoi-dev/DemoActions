@@ -1,6 +1,5 @@
 name: CI/CD Build and Push to Docker Hub
 
-# 1. Kích hoạt workflow khi có hành động push vào nhánh main
 on:
   push:
     branches: [ "main" ]
@@ -10,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Robot 1: Checkout - Lấy mã nguồn từ repo về máy ảo của GitHub
+      # Bước 1: Robot Checkout lấy mã nguồn
       - name: Checkout code
         uses: actions/checkout@v6.0.2
 
-      # (Tùy chọn) Robot hỗ trợ thiết lập Java nếu bạn muốn build file .jar trước khi đóng gói Docker
+      # Bước 2: Cài đặt Java để build file .jar
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -22,22 +21,23 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Bước 3: Build Maven (Trỏ đúng vào thư mục chứa pom.xml)
       - name: Build with Maven
         run: mvn clean package -DskipTests
+        working-directory: ./Ho_Nguyen_Dang_Khoi_DOCKER
 
-      # Robot 2: Docker Login - Đăng nhập vào Docker Hub sử dụng Secrets đã tạo
+      # Bước 4: Robot Docker Login
       - name: Log in to Docker Hub
         uses: docker/login-action@v4.0.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Robot 3: Build and push Docker Images - Xây dựng và đẩy image lên Hub
+      # Bước 5: Robot Build and push Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v7.0.0
         with:
-          context: .
+          # context trỏ vào thư mục chứa Dockerfile
+          context: ./Ho_Nguyen_Dang_Khoi_DOCKER
           push: true
-          # Thay 'your-docker-username' bằng tên thật hoặc dùng biến
-          # 'latest' là tag mặc định, bạn có thể thêm tag theo số version
           tags: ${{ secrets.DOCKER_USERNAME }}/java-springboot-app:latest
