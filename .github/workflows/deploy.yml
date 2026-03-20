@@ -37,7 +37,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v7.0.0
         with:
-          # context trỏ vào thư mục chứa Dockerfile
-          context: ./Ho_Nguyen_Dang_Khoi_DOCKER
+          context: . 
+          file: ./Ho_Nguyen_Dang_Khoi_DOCKER/Dockerfile 
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/java-springboot-app:latest
