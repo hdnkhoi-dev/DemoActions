@@ -1,7 +1,7 @@
 services:
   app-java:
     build: .
-    image: nhqminh/demojava:v3
+    image: hndk17/duanjava:v3.0
     restart: on-failure
     ports:
       - "8082:8082"
