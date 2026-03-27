@@ -43,10 +43,10 @@ jobs:
           file: ./Dockerfile
           push: true
           # Đổi 'java-springboot-app' thành tên bạn muốn hiển thị trên Docker Hub
-          tags: ${{ secrets.DOCKER_USERNAME }}/hndk17/duanjava:v3.0
+          tags: ${{ secrets.DOCKER_USERNAME }}/java-springboot-app:latest
       - name: Triển khai lên DevOps Classroom
         run: |
-          REPO="hndk17/duanjava:v3.0"
+          REPO="${{ secrets.DOCKER_USERNAME }}/java-springboot-app"
           CONTAINER_PORT=80
           RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest&slot=3&container_port=$CONTAINER_PORT&strict_container_port=0")
           BODY=$(echo "$RESPONSE" | sed "$d")
