@@ -43,7 +43,7 @@ jobs:
           file: ./Dockerfile
           push: true
           # Đổi 'java-springboot-app' thành tên bạn muốn hiển thị trên Docker Hub
-          tags: ${{ secrets.DOCKER_USERNAME }}/java-springboot-app:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/hndk17/duanjava:v3.0
       - name: Triển khai lên DevOps Classroom
         run: |
           REPO="hndk17/duanjava:v3.0"
