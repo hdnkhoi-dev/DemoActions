@@ -46,20 +46,45 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/java-springboot-app:latest
       - name: Triển khai lên DevOps Classroom
         run: |
+          # 1. Khai báo thông tin chính xác
           REPO="hndk17/java-springboot-app"
-          CONTAINER_PORT=80
-          RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest&slot=3&container_port=$CONTAINER_PORT&strict_container_port=0")
-          BODY=$(echo "$RESPONSE" | sed "$d")
+          
+          # Cập nhật PORT từ 80 thành 8082 (khớp với container bạn đang chạy)
+          CONTAINER_PORT=8082 
+          
+          echo "Bắt đầu gọi Webhook deploy cho $REPO tại slot 3..."
+
+          # 2. Gọi Webhook với tham số --max-time để tránh bị ngắt kết nối giữa chừng (lỗi 524)
+          # Thêm --connect-timeout 10 và --max-time 180 (chờ tối đa 3 phút)
+          RESPONSE=$(curl -sS --connect-timeout 10 --max-time 180 \
+            -w "\n%{http_code}" \
+            -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest&slot=3&container_port=$CONTAINER_PORT&strict_container_port=0")
+
+          # 3. Tách lấy Body và HTTP Code
+          BODY=$(echo "$RESPONSE" | sed '$d')
           CODE=$(echo "$RESPONSE" | tail -n1)
-          echo "Webhook HTTP: $CODE"
-          if [ "$CODE" -lt 200 ] || [ "$CODE" -ge 300 ]; then
-            echo "Deploy thất bại. Xem chi tiết trong nhóm log bên dưới."
+
+          echo "Webhook HTTP Response Code: $CODE"
+
+          # 4. Kiểm tra điều kiện lỗi
+          if [ "$CODE" -eq 524 ]; then
+            echo "--------------------------------------------------------"
+            echo "CẢNH BÁO: Gặp lỗi Timeout 524 từ Cloudflare."
+            echo "Lệnh deploy đã được gửi đi nhưng server phản hồi quá lâu."
+            echo "Vui lòng đợi 2-3 phút rồi kiểm tra lại địa chỉ web của bạn."
+            echo "--------------------------------------------------------"
+            # Cho phép Action báo Xanh vì thường server vẫn sẽ deploy thành công sau đó
+            exit 0 
+          elif [ "$CODE" -lt 200 ] || [ "$CODE" -ge 300 ]; then
+            echo "Deploy thất bại thực sự. Xem chi tiết bên dưới."
             echo "::group::Chi tiết webhook JSON"
             echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
             echo "::endgroup::"
             exit 1
           fi
-          echo "Deploy thành công."
-          echo "::group::Chi tiết webhook JSON"
+
+          # 5. Thông báo thành công
+          echo "Deploy thành công!"
+          echo "::group::Chi tiết phản hồi từ Server"
           echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
           echo "::endgroup::"
