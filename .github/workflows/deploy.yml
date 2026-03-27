@@ -46,7 +46,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/java-springboot-app:latest
       - name: Triển khai lên DevOps Classroom
         run: |
-          REPO="${{ secrets.DOCKER_USERNAME }}/java-springboot-app"
+          REPO="hndk17/java-springboot-app"
           CONTAINER_PORT=80
           RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest&slot=3&container_port=$CONTAINER_PORT&strict_container_port=0")
           BODY=$(echo "$RESPONSE" | sed "$d")
